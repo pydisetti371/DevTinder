@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const { Admin, User} = require("../middlewares/auth")
+const { Admin, User} = require("./middlewares/auth")
 // we can send (req,res,next) with [] also
 // app.use(('/posts'), [(req, res, next) => {
 //     console.log("posts", req.query)
