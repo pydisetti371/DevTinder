@@ -13,6 +13,7 @@ connectDb().then((res) => {
 })
 app.use(express.json()) // middleware helps convert JSON body Object to JS object
 app.post('/signup', async (req, res) => {
+    console.log(req.body)
     // const newUser = new user({
     //     firstName: 'Mahesh',
     //     lastName: 'Pydisetti',
@@ -24,7 +25,7 @@ app.post('/signup', async (req, res) => {
         await newUser.save() // insertMany for array of users
         res.send("New user saved successfully")
     } catch (e) {
-        res.status(500).send("Error msg ", e)
+        res.status(500).send("Error msg "+ e.message)
     }
 
 })
@@ -50,7 +51,7 @@ app.get('/allUsers', async (req, res) => {
             res.status(400).send("No records found")
         }
     } catch (e) {
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong")
     }
 })
 
@@ -65,7 +66,7 @@ app.get('/:id', async (req, res) => {
         }
     } catch (e) {
         console.log(e, "67")
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong")
     }
 
 })
@@ -73,21 +74,39 @@ app.get('/:id', async (req, res) => {
 app.delete("/user", async (req, res) => {
     // console.log(req.query)
     try {
-        const deleteUser = await User.findByIdAndDelete(req.query.id);
+        const deleteUser = await User.findByIdAndDelete(req.query.id); // for one Id
+        // const deleteMultipleUsers = await User.deleteMany({
+        //     _id: {\$in: idsToDelete } // implement later
+        // })
         res.send("User deleted successfully")
 
     } catch (e) {
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong")
     }
 })
 
 app.patch("/user", async (req, res) => {
     try {
+        const ALLOWED_UPDATES = [
+            "userId",
+            "photoUrl",
+            "about",
+            "gender",
+            "age",
+            "skills"
+        ]
+        const isUpdateAllowed = Object.keys(req.body).every(k => ALLOWED_UPDATES.includes(k))
+        if (!isUpdateAllowed) {
+           throw new Error("User update not allowed")
+        }
+        if (req.body.skills.length > 10) {
+            throw new Error("Skills not be more than 10")
+        }
         const updateUser = await User.findByIdAndUpdate(req.query.id, req.body) // use bulkWrite for to update each data for ids
         res.send("User Updated Successfully")
 
     } catch (e) {
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong" +e.message)
     }
 })
 
@@ -99,6 +118,8 @@ app.put("/user", async(req,res) => {
     }
       catch (e) {
         console.log(e)
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong")
     }
 })
+
+

@@ -25,3 +25,4 @@ Explore routing and use of +, - , ?, **.. so on
 use of regex in router
 
 
+17/9 : Add api level validations for GET,POST,PUT 
