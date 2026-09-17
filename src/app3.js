@@ -63,9 +63,42 @@ app.get('/:id', async (req, res) => {
         } else {
             res.status(404).send("No user found")
         }
-    } catch(e) {
-        console.log(e,"67")
+    } catch (e) {
+        console.log(e, "67")
         res.status(500).send("Something went wrong")
     }
-   
+
+})
+
+app.delete("/user", async (req, res) => {
+    // console.log(req.query)
+    try {
+        const deleteUser = await User.findByIdAndDelete(req.query.id);
+        res.send("User deleted successfully")
+
+    } catch (e) {
+        res.status(500).send("Something went wrong")
+    }
+})
+
+app.patch("/user", async (req, res) => {
+    try {
+        const updateUser = await User.findByIdAndUpdate(req.query.id, req.body) // use bulkWrite for to update each data for ids
+        res.send("User Updated Successfully")
+
+    } catch (e) {
+        res.status(500).send("Something went wrong")
+    }
+})
+
+app.put("/user", async(req,res) => {
+    try {
+        const updateUser = await User.findOneAndReplace({_id: req.query.id}, req.body)
+        console.log(updateUser,"000")
+        res.send("User Details Update SUccessfully")
+    }
+      catch (e) {
+        console.log(e)
+        res.status(500).send("Something went wrong")
+    }
 })
