@@ -17,6 +17,7 @@
     "start": "node src/app3.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "mongoose": "^9.10.1",
     "validator": "^13.15.35"

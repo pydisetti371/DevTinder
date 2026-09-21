@@ -2,7 +2,8 @@ const express = require('express')
 const app = express()
 const { connectDb } = require('./config/database')
 const User = require('./models/user')
-
+const bcrypt = require('bcryptjs')
+const { SignUpValidate } = require('./utils/SignUpValidate')
 connectDb().then((res) => {
     console.log("Db connected successfully", res)
     app.listen('6666', () => {
@@ -13,21 +14,46 @@ connectDb().then((res) => {
 })
 app.use(express.json()) // middleware helps convert JSON body Object to JS object
 app.post('/signup', async (req, res) => {
-    console.log(req.body)
-    // const newUser = new user({
-    //     firstName: 'Mahesh',
-    //     lastName: 'Pydisetti',
-    //     emailId: 'mahesh.pydisetti@gmail.com',
-    //     password: 'mahesh123'
-    // })
-    const newUser = new User(req.body) // new is mandatory. -> means it will create a new instance
+    // new is mandatory. -> means it will create a new instance
     try {
-        await newUser.save() // insertMany for array of users
-        res.send("New user saved successfully")
+        SignUpValidate(req.body)
+        const { firstName, lastName, emailId, password } = req.body
+        const hashPassword = await bcrypt.hash(password, 10);
+        const emailInDB = await User.findOne({ emailId: emailId })
+        if (emailInDB) {
+            throw new Error("Email Already Exists, Please try with new one")
+        } else {
+            const newUser = new User({ firstName, lastName, emailId, password: hashPassword })
+            await newUser.save() // insertMany for array of users
+            res.send("New user saved successfully")
+        }
+
     } catch (e) {
-        res.status(500).send("Error msg "+ e.message)
+        // console.log(e)
+        res.status(400).send("Error  " + e.message)
     }
 
+})
+
+app.post("/login", async (req, res) => {
+    try {
+        const body = req.body
+        const { emailId, password } = body
+        const userObj = await User.findOne({ emailId: emailId });
+        if (!userObj) {
+            throw new Error("Invalid Credentials")
+        }
+        const isPasswordSame = await bcrypt.compare(password, userObj?.password);
+        if (isPasswordSame) {
+            res.send("Login Credentials verified")
+        } else {
+            throw new Error("Invalid Credentials")
+
+        }
+
+    } catch (e) {
+        res.status(400).send("Error  " + e.message)
+    }
 })
 app.get('/email', async (req, res) => {
     try {
@@ -38,7 +64,7 @@ app.get('/email', async (req, res) => {
             res.status(404).send([])
         }
     } catch (e) {
-        res.status(500).send("Something went wrong")
+        res.status(400).send("Something went wrong")
     }
 })
 
@@ -93,11 +119,13 @@ app.patch("/user", async (req, res) => {
             "about",
             "gender",
             "age",
-            "skills"
+            "skills",
+            "firstName",
+            "lastName"
         ]
         const isUpdateAllowed = Object.keys(req.body).every(k => ALLOWED_UPDATES.includes(k))
         if (!isUpdateAllowed) {
-           throw new Error("User update not allowed")
+            throw new Error("User update not allowed")
         }
         if (req.body.skills.length > 10) {
             throw new Error("Skills not be more than 10")
@@ -106,17 +134,17 @@ app.patch("/user", async (req, res) => {
         res.send("User Updated Successfully")
 
     } catch (e) {
-        res.status(400).send("Something went wrong" +e.message)
+        res.status(400).send("Something went wrong" + e.message)
     }
 })
 
-app.put("/user", async(req,res) => {
+app.put("/user", async (req, res) => {
     try {
-        const updateUser = await User.findOneAndReplace({_id: req.query.id}, req.body)
-        console.log(updateUser,"000")
+        const updateUser = await User.findOneAndReplace({ _id: req.query.id }, req.body)
+        console.log(updateUser, "000")
         res.send("User Details Update SUccessfully")
     }
-      catch (e) {
+    catch (e) {
         console.log(e)
         res.status(400).send("Something went wrong")
     }

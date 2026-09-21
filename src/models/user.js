@@ -31,7 +31,7 @@ const userSchema = new Schema({
     password: {
         type: String,
         minLength: 4,
-        maxLength: 20,
+        required:true,
         validate: (value) => {
             if(!validator.isStrongPassword(value)) {
                 throw new Error("Please enter a strong password")
@@ -52,10 +52,11 @@ const userSchema = new Schema({
     },
     photoUrl: {
         type: String,
-        default: "",
+        default: "https://unsplash.com/photos/a-bunch-of-balloons-that-are-shaped-like-email-7NT4EDSI5Ok",
+        // required:false,
         validate: (value) => {
             if(!validator.isURL(value)) {
-                throw new Error("Please add valida url")
+                throw new Error("Please add valida url ")
             }
         }
 
