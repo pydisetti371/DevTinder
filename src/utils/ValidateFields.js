@@ -4,7 +4,7 @@ const SignUpValidate = (req) => {
     const { firstName, lastName, emailId, password } = req;
     if (!firstName || !lastName) {
         throw new Error("firstName and lastName should not be empty")
-    } else if ((firstName.length < 4 || firstName.length > 20 )|| (lastName.length < 4 || lastName.length > 20)) {
+    } else if ((firstName.length < 4 || firstName.length > 20) || (lastName.length < 4 || lastName.length > 20)) {
         throw new Error("Please pass enter min 4 characters")
     } else if (!validator.isEmail(emailId)) {
         throw new Error("Invalid email")
@@ -14,6 +14,15 @@ const SignUpValidate = (req) => {
 
 
 }
+
+const validateEditProfileReq = (req) => {
+    const allowToEditFields = ["firstName", "lastName", "age", "gender", "photoUrl", "about", "skills"]
+    const isEditable = Object.keys(req.body).every(field => allowToEditFields.includes(field))
+    return isEditable
+    
+}
 module.exports = {
-    SignUpValidate: SignUpValidate
+    SignUpValidate: SignUpValidate,
+    validateEditProfileReq:validateEditProfileReq
+
 }

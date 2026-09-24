@@ -65,3 +65,8 @@ app.put("/user", async (req, res) => {
         res.status(400).send("Something went wrong")
     }
 })
+
+/profile  - all info getting
+/like
+/pass
+/imge upload 

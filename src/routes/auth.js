@@ -1,0 +1,74 @@
+const express = require('express')
+const authRouter = express.Router();
+const User = require('../models/user')
+const bcrypt = require('bcryptjs')
+const cookieParser = require('cookie-parser')
+const { SignUpValidate } = require('../utils/ValidateFields')
+authRouter.use(express.json());
+authRouter.use(cookieParser())
+
+authRouter.post('/signup', async (req, res) => {
+    // new is mandatory. -> means it will create a new instance
+    try {
+        SignUpValidate(req.body)
+        const { firstName, lastName, emailId, password } = req.body
+        const hashPassword = await bcrypt.hash(password, 10); // generating ranom id using bcrypt with salt (10) means difficulty level
+        const emailInDB = await User.findOne({ emailId: emailId })
+        if (emailInDB) {
+            throw new Error("Email Already Exists, Please try with new one")
+        } else {
+            const newUser = new User({ firstName, lastName, emailId, password: hashPassword })
+            await newUser.save() // insertMany for array of users
+            res.send("New user saved successfully")
+        }
+
+    } catch (e) {
+        // console.log(e)
+        res.status(400).send("Error  " + e.message)
+    }
+
+})
+
+authRouter.post("/login", async (req, res) => {
+    try {
+        const body = req.body
+        const { emailId, password } = body
+        const userObj = await User.findOne({ emailId: emailId });
+        if (!userObj) {
+            throw new Error("Invalid Credentials")
+        }
+        const isPasswordSameInDb = await userObj.validatePassword(password)
+        if (isPasswordSameInDb) {
+            const generateToken = await userObj.generateToken();
+            res.cookie("token", generateToken, {
+                expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            })
+            res.send("Login Credentials verified")
+        } else {
+            res.cookie('token', null);
+            throw new Error("Invalid Credentials")
+
+        }
+    } catch (e) {
+        res.status(400).send("Error  " + e.message)
+    }
+})
+
+authRouter.post("/updatePassword", (req, res) => {
+    // write updatePassword logic
+})
+
+authRouter.post("/logout", async (req, res) => {
+    try {
+        await res.cookie('token', null, {
+            expires: new Date(Date.now())
+        })
+        res.send(`Logged out successfully`)
+    } catch (e) {
+        res.status(400).send("Error " + e.message)
+    }
+})
+
+module.exports = {
+    AuthRouter: authRouter
+}

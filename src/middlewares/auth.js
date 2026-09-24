@@ -1,21 +1,22 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user')
 const adminAuth = async (req, res, next) => {
+    try {
+        const jwtToken = req.cookies;
+        const { token } = jwtToken;
+        if (token && token !== 'j:null') {
+            const decodedUser = await jwt.verify(token, 'Revanth@!371',); // gets mongodb user id
+            const getUserDetails = await User.findById(decodedUser._id);
+            req.user = getUserDetails
+        } else {
+            throw new Error("Requested user details(token) not found")
+        }
+        next()
 
-    const jwtToken = req.cookies;
-    const { token } = jwtToken;
-    if (token) {
-        const decodedUser = await jwt.verify(token, 'Revanth@!371', ); // gets mongodb user id
-        const getUserDetails = await User.findById(decodedUser._id);
-        // console.log(getUserDetails,"---")
-        req.user = getUserDetails
-    } else {
-
-        throw new Error("Requested user details token not found")
-
+    } catch (e) {
+        res.status(400).send("Error  " + e.message)
     }
-    next()
- 
+
 
 }
 
