@@ -26,3 +26,42 @@ use of regex in router
 
 
 17/9 : Add api level validations for GET,POST,PUT 
+
+app.patch("/user", async (req, res) => {
+    try {
+        const ALLOWED_UPDATES = [
+            "userId",
+            "photoUrl",
+            "about",
+            "gender",
+            "age",
+            "skills",
+            "firstName",
+            "lastName"
+        ]
+        const isUpdateAllowed = Object.keys(req.body).every(k => ALLOWED_UPDATES.includes(k))
+        if (!isUpdateAllowed) {
+            throw new Error("User update not allowed")
+        }
+        if (req.body.skills.length > 10) {
+            throw new Error("Skills not be more than 10")
+        }
+        const updateUser = await User.findByIdAndUpdate(req.query.id, req.body) // use bulkWrite for to update each data for ids
+        res.send("User Updated Successfully")
+
+    } catch (e) {
+        res.status(400).send("Something went wrong" + e.message)
+    }
+})
+
+app.put("/user", async (req, res) => {
+    try {
+        const updateUser = await User.findOneAndReplace({ _id: req.query.id }, req.body)
+        console.log(updateUser, "000")
+        res.send("User Details Update SUccessfully")
+    }
+    catch (e) {
+        console.log(e)
+        res.status(400).send("Something went wrong")
+    }
+})
