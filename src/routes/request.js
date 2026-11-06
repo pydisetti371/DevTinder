@@ -1,11 +1,44 @@
 const express = require('express');
 const requestRouter = express.Router()
 const { Admin } = require('../middlewares/auth')
-requestRouter.get('/sendConnectionRequest', Admin, async (req, res) => {
+const UserModel = require('../models/user')
+const ConnectionRequestModel = require('../models/connectionRequest')
+requestRouter.post('/request/send/:status/:userId', Admin, async (req, res, next) => {
     try {
-        const getDetails = req.user
-        res.send(`Connection req sent to ${getDetails.firstName} `)
+        const { status } = req.params
+        let fromUserId = req.user._id
+        let toUserId = req.params.userId
+        const toUserDetails = await UserModel.findById(req.params.userId)
+        const connectionStatus = ['ignored', 'interested']
+        if (!connectionStatus.includes(status)) {
+            res.status(404).send("Invalid status type")
+            return
+        }
+        const isFromAndToUserExists = await ConnectionRequestModel.findOne({ fromUserId, toUserId })
+        if (isFromAndToUserExists) {
+            res.status(409).send("An active connection already exists between these two accounts.")
+            return
+        }
+        const existingConnection = await ConnectionRequestModel.findOne({
+            $or: [
+                { fromUserId, toUserId },
+                { fromUserId: toUserId, toUserId: fromUserId }
+            ]
+        })
+        if (existingConnection) {
+            res.status(409).send("An active connection already exists between these two accounts.")
+            return
+        }
+        const saveConnection = new ConnectionRequestModel({ fromUserId, toUserId, status, toUserName: toUserDetails.firstName, fromUserName: req.user.firstName })
+        const saveData = await saveConnection.save()
+
+        res.json({
+            message: `${req.user.firstName} has ${status} to ${toUserDetails.firstName}`,
+            saveData
+
+        })
     } catch (e) {
+        console.log(e)
         res.status(400).send("Something went wrong " + e.message)
     }
 })
@@ -13,3 +46,7 @@ requestRouter.get('/sendConnectionRequest', Admin, async (req, res) => {
 module.exports = {
     RequestRouter: requestRouter
 }
+
+// fromUserID & toUserID if available in db don't allow to submit - done
+// don't allow if from and to are having same ids
+// if a connection is also viceversa don't accept - done
