@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const connectRequestSchema = new mongoose.Schema({
     fromUserId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
+        required: true,
+        ref: "User" // here accessing directly from User table, table name must be what is defined in User model and fetching details with match objectId. (TYPE)
+    }, 
     toUserId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
