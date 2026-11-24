@@ -1,6 +1,7 @@
 const express = require('express')
 const { Admin } = require('../middlewares/auth');
 const ConnectionRequestModel = require('../models/connectionRequest');
+const UserModel = require('../models/user')
 const userRouter = express.Router()
 
 userRouter.get("/user/requests/received", Admin, async (req, res) => {
@@ -57,16 +58,15 @@ userRouter.get("/feed", Admin, async (req, res) => {
         const skip = (page - 1) * limit;
 
         const loggedInUser = req.user;
-        const connectionRequests = await ConnectionRequest.find({
+        const connectionRequests = await ConnectionRequestModel.find({
             $or: [{ fromUserId: loggedInUser._id, toUserId: loggedInUser._id }]
         }).select("fromUserId toUserId");
-
         const hideUsersFromFeed = new Set();
         connectionRequests.forEach((req) => {
             hideUsersFromFeed.add(req.fromUserId.toString())
             hideUsersFromFeed.add(req.toUserId.toString())
         })
-        const users = await User.find({
+        const users = await UserModel.find({
             $and: [
                 { _id: { $nin: Array.from(hideUsersFromFeed) } }, // $nin -> not include
                 { _id: { $ne: loggedInUser._id } } // $ne -> not equal

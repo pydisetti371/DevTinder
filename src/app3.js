@@ -32,5 +32,3 @@ connectDb().then((res) => {
 }).catch(err => {
     console.log(err)
 })
-
-

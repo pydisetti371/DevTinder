@@ -9,7 +9,7 @@ const adminAuth = async (req, res, next) => {
             const getUserDetails = await User.findById(decodedUser._id);
             req.user = getUserDetails
         } else {
-            throw new Error("Requested user details(token) not found")
+            res.status(401).send("Requested user details(token) not found")
         }
         next()
 

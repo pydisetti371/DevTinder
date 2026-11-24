@@ -5,7 +5,7 @@ const { validateEditProfileReq, ValidatePassword } = require('../utils/ValidateF
 const validator = require('validator');
 const bcrypt = require('bcryptjs')
 const User = require('../models/user')
-profileRouter.get('/profileview', Admin, async (req, res) => {
+profileRouter.get('/profile/view', Admin, async (req, res) => {
     try {
         const currentUser = req.user
         res.send(currentUser)
@@ -15,7 +15,7 @@ profileRouter.get('/profileview', Admin, async (req, res) => {
     }
 })
 
-profileRouter.patch('/profileEdit', Admin, async (req, res) => {
+profileRouter.patch('/profile/Edit', Admin, async (req, res) => {
     try {
         const currentUser = req.user
         if (validateEditProfileReq(req)) {
