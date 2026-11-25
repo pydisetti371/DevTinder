@@ -24,7 +24,7 @@ profileRouter.patch('/profile/Edit', Admin, async (req, res) => {
 
             })
             await currentUser.save()
-            res.json({ message: "Saved Successfully", updated: currentUser })
+            res.json({ message: "Saved Successfully", data: currentUser })
         } else {
             throw new Error("Not allowed to update")
         }

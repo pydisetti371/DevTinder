@@ -71,7 +71,7 @@ userRouter.get("/feed", Admin, async (req, res) => {
                 { _id: { $nin: Array.from(hideUsersFromFeed) } }, // $nin -> not include
                 { _id: { $ne: loggedInUser._id } } // $ne -> not equal
             ]
-        }).select("firstName lastName age skills").skip(skip).limit(limit);
+        }).select("firstName lastName age skills photoUrl about").skip(skip).limit(limit);
         res.json({
             message: 'Data fetched successfully',
             data: users
